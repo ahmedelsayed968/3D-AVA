@@ -1,0 +1,18 @@
+[project]
+name = "3d-ava"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = []
+
+[tool.uv]
+package = true
+
+[build-system]
+requires = ["setuptools>=42"]
+build-backend = "setuptools.build_meta"
+
+# New section added here to instruct setuptools to find packages inside src/
+[tool.setuptools.packages.find]
+where = ["src"]
