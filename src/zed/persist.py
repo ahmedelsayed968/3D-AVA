@@ -3,8 +3,6 @@ from pathlib import Path
 from loguru import logger
 import numpy as np
 from PIL import Image
-
-
 class ZedSaver:
     @staticmethod
     def save_depth_map(depth_image_np: np.ndarray, exp_path: Path, counter: int):
@@ -76,3 +74,15 @@ class ZedSaver:
         except Exception as e:
             logger.error(f"Error saving keypoints data: {e}")
 
+    @staticmethod
+    def save_extrinsic_matrix(matrix:list,exp_path: Path, counter: int):
+        path_to_save = exp_path / "camera"
+        path_to_save.mkdir(parents=True,exist_ok=True)
+
+        file_path = path_to_save / f"{counter:05}.json"
+        data ={
+                "cam_extrinsics": matrix
+            }
+        
+        with file_path.open(mode="w") as fp:
+            json.dump(data, fp,indent=4)

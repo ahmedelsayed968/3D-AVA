@@ -1,6 +1,7 @@
+import numpy as np
 from zed.object_detection import ObjectDetection
 from zed.body_tracking import BodyTracking
-from zed.utils import parse_args
+from utils.zed_utils import parse_args
 import argparse
 from pyzed import sl
 from loguru import logger
@@ -109,7 +110,6 @@ def main(opt):
         while True:
             # Grab a new frame
             if zed.grab(runtime_parameters) == sl.ERROR_CODE.SUCCESS:
-                
                 # Determine if we should process this frame
                 should_process = False
                 
@@ -130,9 +130,12 @@ def main(opt):
                     left_image = None
                     keypoints_data = None
                     mask_data = None
-                    
+                    extrinsic_matrix = None
                     with lock:  # Use context manager for lock
-                        # Retrieve object detections if enabled
+                        # Retrieve Camera Extrinsic Matrix 
+                        extrinsic_matrix = zed_retrieval.retrieve_camera_extrinsic_matrix()
+
+                        
                         if object_detection:
                             all_objects = zed_retrieval.zed_retrieve_object_detections(runtime_params=object_detection.obj_runtime_params,
                                                                                        instance_id=object_detection.obj_param.instance_module_id)
@@ -176,7 +179,9 @@ def main(opt):
                             Thread(target=ZedSaver.save_keypoints_and_masks, args=(keypoints_data, EXP_DIR, counter)).start()
                         if mask_data is not None and opt.extract_masks:
                             Thread(target=ZedSaver.save_mask, args=(mask_data, EXP_DIR, counter)).start()
-
+                    if opt.save_cam:
+                        if extrinsic_matrix is not None:
+                            Thread(target=ZedSaver.save_extrinsic_matrix, args=(extrinsic_matrix, EXP_DIR, counter)).start()
                     counter += 1
                     
                 frame_counter += 1
@@ -213,7 +218,8 @@ if __name__ == "__main__":
     parser.add_argument('--extract_keypoints', action='store_true', help="Extract and save 2D/3D keypoints")
     parser.add_argument('--extract_masks', action='store_true', help="Extract and save segmentation masks")
     parser.add_argument("--save", action='store_true', help="Save captured data")
-    
+    parser.add_argument("--save_cam", action='store_true', help="Save captured data")
+
     opt = parser.parse_args()
     
     if len(opt.input_svo_file) > 0 and len(opt.ip_address) > 0:

@@ -6,7 +6,6 @@ from pyzed import sl
 class ZedRetrieval:
     def __init__(self,zed):
         self.zed = zed
-        pass
 
     def zed_retrieve_object_detections(self, runtime_params: sl.ObjectDetectionRuntimeParameters, instance_id: int) -> Optional[List[sl.ObjectData]]:
         objects = sl.Objects()
@@ -124,4 +123,13 @@ class ZedRetrieval:
         
         return frame_data
 
-
+    def retrieve_camera_extrinsic_matrix(self)->Optional[np.ndarray]:
+        pose = sl.Pose()
+        state = self.zed.get_position(pose, sl.REFERENCE_FRAME.WORLD)
+        if state == sl.POSITIONAL_TRACKING_STATE.OK:
+            translation_orientation_data = pose.pose_data()
+            cam_extrinsics:np.ndarray = translation_orientation_data.m
+            return cam_extrinsics.tolist()
+        else:
+            logger.error("Cannot retrieve body tracking data")
+        return None
