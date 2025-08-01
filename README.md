@@ -134,3 +134,18 @@ To validate the training pipeline, I switched to an official dataset called **M4
 
 ### Demo of Rendered Human
 https://github.com/user-attachments/assets/c368982c-98bc-448e-8285-429230581af9
+
+
+## 🗂️ Curated Dataset (Public)
+
+After iterating through each stage and refining the pipeline, a curated dataset is now available:
+
+📁 **Download:**
+[🔗 Google Drive - 3D-AVA Curated Dataset](https://drive.google.com/drive/folders/1-hMFWdiqAjLKhnenDnekbF3DM5Pyxkzs?usp=sharing)
+
+
+
+
+
+
+
