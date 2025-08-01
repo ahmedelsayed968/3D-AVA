@@ -55,7 +55,9 @@ Uses Meta AI’s **Segment Anything Model (SAM)** to generate fine-grained human
 
 * Binary `Masks` (segmenting the human subject)
 
-🖼 **Example Output:** <img src="./assets/sample-mask.png" width="40%"/>
+🖼 **Example Output:** 
+
+<img src="./assets/sample-mask.png" width="40%"/>
 
 ---
 
