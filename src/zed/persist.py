@@ -6,7 +6,10 @@ from PIL import Image
 class ZedSaver:
     @staticmethod
     def save_depth_map(depth_image_np: np.ndarray, exp_path: Path, counter: int):
-        save_to = exp_path / f"Pointcloud_{counter+1}.npy"
+        path_to_save = exp_path / "depth-maps"
+        path_to_save.mkdir(parents=True,exist_ok=True)
+
+        save_to = path_to_save / f"{counter+1:05}.npy"
         depth_image_np = np.asarray(depth_image_np)
         np.save(save_to, depth_image_np)
         logger.debug(f"Saved depth map to {save_to}")
@@ -16,8 +19,9 @@ class ZedSaver:
         if image_np is None:
             logger.error("Cannot save None image")
             return
-            
-        save_to = exp_path / f"image_{counter+1}.png"
+        path_to_save = exp_path / "images"
+        path_to_save.mkdir(parents=True,exist_ok=True)
+        save_to = path_to_save / f"{counter+1:05}.png"
         try:
             # Convert BGRA to RGBA if needed (ZED uses BGRA format)
             if image_np.shape[2] == 4:
@@ -46,8 +50,10 @@ class ZedSaver:
         if mask_np is None:
             logger.error("Cannot save None mask")
             return
-            
-        save_to = exp_path / f"mask_{counter+1}.png"
+        
+        path_to_save = exp_path / "masks"
+        path_to_save.mkdir(parents=True,exist_ok=True)
+        save_to = path_to_save / f"{counter+1:05}.png"
         try:
             # Convert to grayscale if needed
             if len(mask_np.shape) == 3:
@@ -65,8 +71,10 @@ class ZedSaver:
         if not frame_data['bodies']:
             logger.debug(f"No bodies detected in frame {counter}")
             return
-        
-        save_to = exp_path / f"keypoints_{counter+1}.json"
+        path_to_save = exp_path / "bodies"
+        path_to_save.mkdir(parents=True,exist_ok=True)
+
+        save_to = path_to_save / f"{counter+1:05}.json"
         try:
             with open(save_to, 'w') as f:
                 json.dump(frame_data, f, indent=2)
@@ -79,7 +87,7 @@ class ZedSaver:
         path_to_save = exp_path / "camera"
         path_to_save.mkdir(parents=True,exist_ok=True)
 
-        file_path = path_to_save / f"{counter:05}.json"
+        file_path = path_to_save / f"{counter+1:05}.json"
         data ={
                 "cam_extrinsics": matrix
             }
