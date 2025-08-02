@@ -137,6 +137,127 @@ To validate the training pipeline, I switched to an official dataset called **M4
 ### Demo of Rendered Human
 https://github.com/user-attachments/assets/c368982c-98bc-448e-8285-429230581af9
 
+## How to Run
+
+### Prerequisites
+
+1. A ZED camera or a recorded `.svo` file.
+2. Install the [ZED SDK v4.2](https://www.stereolabs.com/en-eg/developers/release/4.2).
+3. Install [uv](https://github.com/astral-sh/uv).
+
+---
+
+### Step 1: Install Dependencies
+
+1. Create a virtual environment and install project dependencies from `pyproject.toml`:
+    ```bash
+    uv venv
+    uv sync
+    ```
+
+2. Activate the virtual environment:
+    ```bash
+    source .venv/bin/3d-ava
+    ```
+
+3. Install the ZED Python bindings:
+    ```bash
+    uv run src/zed-config/install-pyzed.py
+    ```
+
+4. Make the project editable (for proper imports):
+    ```bash
+    uv pip install -e .
+    ```
+
+---
+
+### Step 2: Data Acquisition
+
+1. Extract data from an `.svo` file:
+    ```bash
+    uv run src/zed/main.py \
+      --input_svo_file {YOUR-FILE_PATH} \
+      --enable_od \
+      --enable_body_tracking \
+      --extract_keypoints \
+      --save \
+      --save_cam
+    ```
+    Output will be saved under:
+    ```bash
+    /PROJECT_DIR/.data/experiments/EXP_{NUM}
+    ├── bodies
+    ├── camera
+    ├── depth-maps
+    └── images
+    ```
+
+2. Clean incomplete data entries (frames missing any modality):
+    ```bash
+    uv run src/data/trim_entries.py --exp_path {YOUR-EXP-PATH}
+    ```
+
+3. Extract bounding boxes from raw body data:
+    ```bash
+    uv run src/data/extract_bbox.py --exp_path {YOUR-EXP-PATH}
+    ```
+    Directory structure after this step:
+    ```bash
+    .
+    ├── bbox
+    ├── bodies
+    ├── camera
+    ├── depth-maps
+    └── images
+    ```
+
+4. Generate segmentation masks for each frame:
+    ```bash
+    uv run src/data/extract_mask.py --exp_path {YOUR-EXP-PATH}
+    ```
+    Resulting structure:
+    ```bash
+    .
+    ├── bbox
+    ├── bodies
+    ├── camera
+    ├── depth-maps
+    ├── images
+    └── masks
+    ```
+
+5. Extract 38-joint keypoints from body data:
+    ```bash
+    uv run src/data/extract_keypoint.py --exp_path {YOUR-EXP-PATH}
+    ```
+    Updated structure:
+    ```bash
+    .
+    ├── bbox
+    ├── bodies
+    ├── camera
+    ├── depth-maps
+    ├── images
+    └── keypoints
+    ```
+
+6. Generate EasyMocap-compatible annotations:
+    ```bash
+    uv run src/data/create_easymocap_data.py --exp_path {YOUR-EXP-PATH}
+    ```
+    Final structure:
+    ```bash
+    .
+    ├── annots
+    ├── bbox
+    ├── bodies
+    ├── camera
+    ├── depth-maps
+    ├── images
+    └── keypoints
+    ```
+
 
 ## 🗂️ Curated Dataset (Public)
 
