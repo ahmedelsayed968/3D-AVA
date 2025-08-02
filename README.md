@@ -57,7 +57,7 @@ Uses Meta AI’s **Segment Anything Model (SAM)** to generate fine-grained human
 
 🖼 **Example Output:** 
 
-<img src="./assets/sample-mask.png" width="40%"/>
+<img src="./assets/sample-mask.png" width="60%"/>
 
 ---
 
@@ -82,7 +82,8 @@ Uses Meta AI’s **Segment Anything Model (SAM)** to generate fine-grained human
 
 This is the **canonical 3D representation** used by GaussianAvatar for consistent geometry and animation.
 
----
+#### Sample of Rendered mesh 
+<img src="./assets/sample-mesh.png" width="60%"/>
 
 ## 🧊 **Step 5: Packaging for GaussianAvatar**
 
