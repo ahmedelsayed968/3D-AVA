@@ -1,7 +1,87 @@
 from dataclasses import dataclass,astuple
+import json
 from typing import List,Dict,Union
 
-from utils.data_utils import read_json
+def read_json(path:str):
+  with open(path,mode="r") as fin:
+    data = json.load(fin)
+  return data
+
+KEYPOINTS_BODY_38: dict[str,int] = {
+    "PELIVIS": 0,
+    "SPINE_1": 1,
+    "SPINE_2": 2,
+    "SPINE_3": 3,
+    "NECK": 4,
+    "NOSE": 5,
+    "LEFT_EYE": 6,
+    "RIGHT_EYE": 7,
+    "LEFT_EAR": 8,
+    "RIGHT_EAR": 9,
+    "LEFT_CLAVICLE": 10,
+    "RIGHT_CLAVICLE": 11,
+    "LEFT_SHOULDER": 12,
+    "RIGHT_SHOULDER": 13,
+    "LEFT_ELBOW": 14,
+    "RIGHT_ELBOW": 15,
+    "LEFT_WRIST": 16,
+    "RIGHT_WRIST": 17,
+    "LEFT_HIP": 18,
+    "RIGHT_HIP": 19,
+    "LEFT_KNEE": 20,
+    "RIGHT_KNEE": 21,
+    "LEFT_ANKLE": 22,
+    "RIGHT_ANKLE": 23,
+    "LEFT_BIG_TOE": 24,
+    "RIGHT_BIG_TOE": 25,
+    "LEFT_SMALL_TOE": 26,
+    "RIGHT_SMALL_TOE": 27,
+    "LEFT_HEEL": 28,
+    "RIGHT_HEEL": 29,
+    "LEFT_HAND_THUMB_4": 30,
+    "RIGHT_HAND_THUMB_4": 31,
+    "LEFT_HAND_INDEX_1": 32,
+    "RIGHT_HAND_INDEX_1": 33,
+    "LEFT_HAND_MIDDLE_4": 34,
+    "RIGHT_HAND_MIDDLE_4": 35,
+    "LEFT_HAND_PINKY_1": 36,
+    "RIGHT_HAND_PINKY_1": 37,
+}
+
+BODY_25_KEYPOINTS_ZED_STYLE: dict[str, int] = {
+    "NOSE": 0,
+    "NECK": 1,
+    "RIGHT_SHOULDER": 2,
+    "RIGHT_ELBOW": 3,
+    "RIGHT_WRIST": 4,
+    "LEFT_SHOULDER": 5,
+    "LEFT_ELBOW": 6,
+    "LEFT_WRIST": 7,
+    "PELIVIS": 8,               # aka MidHip
+    "RIGHT_HIP": 9,
+    "RIGHT_KNEE": 10,
+    "RIGHT_ANKLE": 11,
+    "LEFT_HIP": 12,
+    "LEFT_KNEE": 13,
+    "LEFT_ANKLE": 14,
+    "RIGHT_EYE": 15,
+    "LEFT_EYE": 16,
+    "RIGHT_EAR": 17,
+    "LEFT_EAR": 18,
+    "LEFT_BIG_TOE": 19,
+    "LEFT_SMALL_TOE": 20,
+    "LEFT_HEEL": 21,
+    "RIGHT_BIG_TOE": 22,
+    "RIGHT_SMALL_TOE": 23,
+    "RIGHT_HEEL": 24
+}
+
+BODY25_FROM_ZED38 = {
+   value: KEYPOINTS_BODY_38[key] 
+   for key,value in BODY_25_KEYPOINTS_ZED_STYLE.items()
+}
+
+
 @dataclass
 class BBox:
     xmin: float
@@ -23,7 +103,13 @@ class BBox:
 
     def compute_area(self):
         return (self.xmax - self.xmin) * (self.ymax - self.ymin)
-
+    
+    @classmethod
+    def from_path(cls,path:str):
+        data = read_json(path)
+        bbox = data['bodies'][0]['bounding_box_2d']
+        confidence = data['bodies'][0]['confidence']
+        return cls.from_zed_format(bbox,confidence)
 @dataclass
 class Keypoint2D:
     joint_id: int
@@ -43,21 +129,13 @@ class KeyPoints2D:
             ],
             confidence=confidence
         )
-
+    @classmethod
+    def from_path(cls,path:str):
+        data = read_json(path)
+        keypoints_raw = data['bodies'][0]['keypoints_2d']
+        confidence = data['bodies'][0]['confidence']
+        return cls.from_zed_format(keypoints_raw,confidence=confidence)
     def get_body25(self):
-      BODY25_FROM_ZED38 = {
-        0: 5,   1: 4,
-        2: 13,  3: 15,  4: 17,
-        5: 12,  6: 14,  7: 16,
-        8: 0,   9: 19,
-        10: 21, 11: 23,
-        12: 18, 13: 20, 14: 22,
-
-        15: 7, 16: 6, 17: 9, 18: 8,
-        19: 24, 20: 26, 21: 28,
-        22: 25, 23: 27,
-        24: 29
-    }
 
       body25 = []
       for bp25_idx in sorted(BODY25_FROM_ZED38.keys()):
