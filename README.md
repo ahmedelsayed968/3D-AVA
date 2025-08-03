@@ -258,7 +258,87 @@ https://github.com/user-attachments/assets/c368982c-98bc-448e-8285-429230581af9
     └── keypoints
     ```
 
+### Step 3: Create SMPL meshes
 
+1. Install EasyMocap
+
+        ```bash
+        git clone https://github.com/zju3dv/EasyMocap.git
+
+        conda create -n easymocap python=3.9 -y
+
+        conda activate easymocap
+
+        wget -c https://download.pytorch.org/whl/cu116/torch-1.12.0%2Bcu116-cp39-cp39-linux_x86_64.whl
+
+        python3 -m pip install ./torch-1.12.0+cu116-cp39-cp39-linux_x86_64.whl
+
+        wget -c https://download.pytorch.org/whl/cu116/torchvision-0.13.0%2Bcu116-cp39-cp39-linux_x86_64.whl
+
+        python3 -m pip install ./torchvision-0.13.0+cu116-cp39-cp39-linux_x86_64.whl
+        ```
+
+    open requirements file and delete from it mediapip then add to the end of the file these requirements
+
+        ```Plaintext
+        mediapipe
+        seaborn
+        ```
+    ---
+
+        ```bash
+
+        python -m pip install -r requirements.txt
+
+        pip install spconv-cu116
+
+        # install pyrender if you have a screen
+        python3 -m pip install pyrender
+
+        python setup.py develop
+        ```
+
+    then set this enviroment variable 
+    ```bash
+        export PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=python
+    ```
+    finally downgrade numpy 
+    ```bash
+    pip uninstall numpy
+    pip install numpy==1.23.5
+    ```
+2. Edit file `myeasymocap/backbone/pare/pare.py` line `250` to this line
+    ```python
+    state_dict = torch.load(ckpt, map_location='cpu',weights_only=False)['state_dict']
+
+    ``` 
+
+3. Edit the configuration file `config/datasets/svimage.yml` to be something like this
+    ```yaml
+    module: myeasymocap.datasets.sv1p.SVDataset
+    args:
+    root: /kaggle/working/EasyMocap/.data/experiments/EXP_9 # Full path to the dataset
+    subs: ['']  
+    ranges: [0, 10000, 1] 
+    read_image: True 
+    reader:
+        images:
+            root: images
+            ext: .png
+        image_shape:
+            root: images
+            ext: .png
+    ```
+4. Run the fitting module using this command
+    ```bash
+    emc --data config/datasets/svimage.yml \    
+        --exp config/1v1p/hrnet_pare_finetune.yml \
+        --root {PATH-TO-DATA} \
+        --out output/{ANY-TH}
+    ```
+### Step 4:  Train GaussianAvatar 
+by following the steps provided on this fork you can easily train and animate the avatar!
+[GaussianAvatar](https://github.com/ahmedelsayed968/GaussianAvatar)
 ## 🗂️ Curated Dataset (Public)
 
 After iterating through each stage and refining the pipeline, a curated dataset is now available:
