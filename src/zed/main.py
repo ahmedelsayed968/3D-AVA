@@ -1,3 +1,4 @@
+import json
 import numpy as np
 from zed.object_detection import ObjectDetection
 from zed.body_tracking import BodyTracking
@@ -82,8 +83,15 @@ def main(opt):
     fy = left_cam_params.fy
     cx = left_cam_params.cx
     cy = left_cam_params.cy
+    K = [
+        [fx, 0,  cx],
+        [0,  fy, cy],
+        [0,  0,  1]
+    ]
     logger.debug(f"Camera intrinsics - fx: {fx}, fy: {fy}, cx: {cx}, cy: {cy}")
-    
+    with open(EXP_DIR/"camera_intrinsic.json",mode="w") as fin:
+        json.dump({"K":K},fin)
+
     # Initialize counters and timing
     counter = 0
     frame_counter = 0
