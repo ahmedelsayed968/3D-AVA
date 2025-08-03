@@ -21,6 +21,40 @@ def create_dataframe(paths:list,key):
   ]
   return pd.DataFrame(data)
 
+def rename_paths(entry:pd.Series,
+                 bodies_dir,
+                 image_dir,
+                 camera_dir,
+                 depth_dir
+                 ):
+    new_id = entry['new_id']
+
+    old_body_path = entry['body']
+    old_image_path = entry['image']
+    old_camera_path = entry['camera']
+    old_depth_map_path = entry['depth-map']
+
+
+    # Define new file paths
+    new_body_path = bodies_dir / f"{new_id:05}.json"
+    new_image_path = image_dir / f"{new_id:05}.png"
+    new_camera_path = camera_dir / f"{new_id:05}.json"
+    new_depth_map_path = depth_dir / f"{new_id:05}.npy"
+
+    try:
+        # Rename files 
+        os.rename(src=old_body_path, dst=str(new_body_path))
+        os.rename(src=old_image_path, dst=str(new_image_path))
+        os.rename(src=old_camera_path, dst=str(new_camera_path))
+        os.rename(src=old_depth_map_path, dst=str(new_depth_map_path))
+
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+        # Optionally, log or handle the error in a way that suits your needs
+    except Exception as e:
+        print(f"An unexpected error occurred: {e}")
+
+    return entry
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--exp_path",type=str,help="path to the experiment")
@@ -33,10 +67,10 @@ if __name__ == "__main__":
     camera_dir = exp_path / "camera"
     depth_dir = exp_path / "depth-maps"
 
-    bodies_paths = list(bodies_dir.iterdir())
-    image_paths =  list(image_dir.iterdir())
-    camera_paths = list(camera_dir.iterdir())
-    depth_paths =  list(depth_dir.iterdir())
+    bodies_paths = sort_by_index(list(bodies_dir.iterdir()))
+    image_paths =  sort_by_index(list(image_dir.iterdir()))
+    camera_paths = sort_by_index(list(camera_dir.iterdir()))
+    depth_paths =  sort_by_index(list(depth_dir.iterdir()))
     
     bodies_df = create_dataframe(bodies_paths,key="body")
     image_df  = create_dataframe(image_paths,key="image")
@@ -69,3 +103,7 @@ if __name__ == "__main__":
     else:
         print("No files to be deleted!")
 
+    # Process clean entries
+    clean_df = full_df.dropna().reset_index(drop=True)
+    clean_df['new_id'] = list(range(len(clean_df)))
+    clean_df.apply(rename_paths,axis=1,args=(bodies_dir,image_dir,camera_dir,depth_dir))
